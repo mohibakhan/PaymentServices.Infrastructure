@@ -1,0 +1,12 @@
+# Bicep compiled output
+*.json
+!*parameters*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vs/
+.idea/
+*.user
