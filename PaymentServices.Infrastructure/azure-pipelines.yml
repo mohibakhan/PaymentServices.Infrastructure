@@ -1,0 +1,145 @@
+# =============================================================================
+# PaymentServices.Infrastructure — Azure DevOps Deployment Pipeline
+# Deploys Bicep templates to DEV → QA → PROD
+# Manual approval gates between DEV→QA and QA→PROD
+# =============================================================================
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - refs/heads/main
+      - refs/heads/master
+  paths:
+    include:
+      - modules/**
+      - dev/**
+      - qa/**
+      - prod/**
+
+pr: none
+
+# ---------------------------------------------------------------------------
+# Variable groups — store sensitive params in ADO Library
+# ---------------------------------------------------------------------------
+variables:
+  - group: pmtsvc-infra-dev
+  - group: pmtsvc-infra-qa
+  - group: pmtsvc-infra-prod
+
+# ---------------------------------------------------------------------------
+# Stages
+# ---------------------------------------------------------------------------
+stages:
+
+  # ---------------------------------------------------------------------------
+  # Stage 1: DEV
+  # ---------------------------------------------------------------------------
+  - stage: DeployDEV
+    displayName: 'Deploy DEV'
+    jobs:
+      - deployment: DeployInfraDEV
+        displayName: 'Deploy Infrastructure to DEV'
+        pool:
+          name: Azure Pipelines
+        environment: 'pmtsvc-dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: 'Deploy Bicep to DEV'
+                  inputs:
+                    deploymentScope: 'Resource Group'
+                    azureResourceManagerConnection: 'AzureServiceConnection-DEV'
+                    subscriptionId: '$(DEV_SUBSCRIPTION_ID)'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: 'rg-pmtsvc-dev'
+                    location: 'centralus'
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/dev/main.bicep'
+                    overrideParameters: >
+                      -appConfigEndpoint "$(DEV_APP_CONFIG_ENDPOINT)"
+                      -appInsightsConnectionString "$(DEV_APP_INSIGHTS_CONNECTION_STRING)"
+                      -managedIdentityId "$(DEV_MANAGED_IDENTITY_ID)"
+                      -managedIdentityClientId "$(DEV_MANAGED_IDENTITY_CLIENT_ID)"
+                    deploymentMode: 'Incremental'
+                    deploymentName: 'pmtsvc-infra-dev-$(Build.BuildId)'
+
+  # ---------------------------------------------------------------------------
+  # Stage 2: QA — requires manual approval after DEV
+  # ---------------------------------------------------------------------------
+  - stage: DeployQA
+    displayName: 'Deploy QA'
+    dependsOn: DeployDEV
+    condition: succeeded()
+    jobs:
+      - deployment: DeployInfraQA
+        displayName: 'Deploy Infrastructure to QA'
+        pool:
+          name: Azure Pipelines
+        environment: 'pmtsvc-qa'    # ← approval gate configured on this environment in ADO
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: 'Deploy Bicep to QA'
+                  inputs:
+                    deploymentScope: 'Resource Group'
+                    azureResourceManagerConnection: 'AzureServiceConnection-QA'
+                    subscriptionId: '$(QA_SUBSCRIPTION_ID)'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: 'rg-pmtsvc-qa'
+                    location: 'centralus'
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/qa/main.bicep'
+                    overrideParameters: >
+                      -appConfigEndpoint "$(QA_APP_CONFIG_ENDPOINT)"
+                      -appInsightsConnectionString "$(QA_APP_INSIGHTS_CONNECTION_STRING)"
+                      -managedIdentityId "$(QA_MANAGED_IDENTITY_ID)"
+                      -managedIdentityClientId "$(QA_MANAGED_IDENTITY_CLIENT_ID)"
+                    deploymentMode: 'Incremental'
+                    deploymentName: 'pmtsvc-infra-qa-$(Build.BuildId)'
+
+  # ---------------------------------------------------------------------------
+  # Stage 3: PROD — requires manual approval after QA
+  # ---------------------------------------------------------------------------
+  - stage: DeployPROD
+    displayName: 'Deploy PROD'
+    dependsOn: DeployQA
+    condition: succeeded()
+    jobs:
+      - deployment: DeployInfraPROD
+        displayName: 'Deploy Infrastructure to PROD'
+        pool:
+          name: Azure Pipelines
+        environment: 'pmtsvc-prod'  # ← approval gate configured on this environment in ADO
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: 'Deploy Bicep to PROD'
+                  inputs:
+                    deploymentScope: 'Resource Group'
+                    azureResourceManagerConnection: 'AzureServiceConnection-PROD'
+                    subscriptionId: '$(PROD_SUBSCRIPTION_ID)'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: 'rg-pmtsvc-prod'
+                    location: 'centralus'
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/prod/main.bicep'
+                    overrideParameters: >
+                      -appConfigEndpoint "$(PROD_APP_CONFIG_ENDPOINT)"
+                      -appInsightsConnectionString "$(PROD_APP_INSIGHTS_CONNECTION_STRING)"
+                      -managedIdentityId "$(PROD_MANAGED_IDENTITY_ID)"
+                      -managedIdentityClientId "$(PROD_MANAGED_IDENTITY_CLIENT_ID)"
+                    deploymentMode: 'Incremental'
+                    deploymentName: 'pmtsvc-infra-prod-$(Build.BuildId)'
