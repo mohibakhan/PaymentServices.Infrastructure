@@ -1,0 +1,108 @@
+curl --location 'https://localhost:7271/api/AlloyEvents/transaction' \
+--header 'accept: text/plain' \
+--header 'Content-Type: application/json' \
+--data '{
+    "external_transaction_id": "24537305-4542-43b6-a113-af925b721f65", 
+    "external_account_id": "8b43351f-5fb9-477b-828d-7ac8310a639e", 
+    "external_entity_id": "07e984a9-d9d4-45e8-9947-e201ede9a556", 
+    "timestamp": "2023-12-06T13:54:39.735Z",
+    "is_approved": true,
+    "transaction_created_date": "2023-12-06T13:54:39.735Z",
+    "transaction_settled_date": "2023-12-06T13:54:39.735Z",
+    "amount": -2000000,
+    "process_method": "Cash",
+    "category": "Withdrawal",
+    "interaction_point": "ATM",
+    "description": "NEW YORK NY #238490 WITHDR 12/6",
+    "status": "Completed",
+    "status_detail": "Completed - Posted",
+    "currency": "USD",
+    "is_triggered_by_user": false,
+    "type_code": "ATM01",
+    "type_description": "ATM Cash Withdrawal",
+    "counterparty": {
+        "external_counterparty_id": "BOA NEW YORK NY #238490",
+        "account_type": "merchant account",
+        "account_name": "BOA NEW YORK NY #238490 ATM",
+        "account_number": "BOA NEW YORK NY #238490",
+        "country_code": "US"
+    },
+    "supplemental_data": {},
+    "meta": {}
+}'
+
+{
+  "external_transaction_id": "e3065d04-95aa-47a1-915c-84b575ff3855", // unique identifier
+  "external_account_id": "b045a6dd-78b2-4f1f-8b24-8c3a244510d7", // external_account_id from bank created response
+  "external_entity_id": "464e5133-838e-42f7-ab71-beeb8f20e418", // external_entity_id from person created response
+  "timestamp": "2023-12-06T13:54:39.735Z",
+  "is_approved": true,
+  "transaction_created_date": "2023-12-06T13:54:39.735Z",
+  "transaction_settled_date": "2023-12-06T13:54:39.735Z",
+  "amount": -2000000,
+  "process_method": "Cash",
+  "category": "Withdrawal",
+  "interaction_point": "ATM",
+  "description": "NEW YORK NY #238490 WITHDR 12/6",
+  "status": "Completed",
+  "status_detail": "Completed - Posted",
+  "currency": "USD",
+  "is_triggered_by_user": false,
+  "type_code": "ATM01",
+  "type_description": "ATM Cash Withdrawal",
+  "counterparty": {
+    "external_counterparty_id": "BOA NEW YORK NY #238490",
+    "account_type": "merchant account",
+    "account_name": "BOA NEW YORK NY #238490 ATM",
+    "account_number": "BOA NEW YORK NY #238490",
+    "country_code": "US"
+  },
+  "supplemental_data": {},
+  "meta": {}
+}
+
+{
+  "status_code": 201,
+  "event_request_token": "EV-XQOW22ZvSG7X46mAfK2D",
+  "_links": {
+    "self": {
+      "href": "/v1/events/EV-XQOW22ZvSG7X46mAfK2D"
+    }
+  },
+  "event": {
+    "event_type": "transaction",
+    "event_status": "PROCESSED",
+    "data": {
+      "external_transaction_id": "e3065d04-95aa-47a1-915c-84b575ff3855",
+      "external_account_id": "b045a6dd-78b2-4f1f-8b24-8c3a244510d7",
+      "external_entity_id": "464e5133-838e-42f7-ab71-beeb8f20e418",
+      "timestamp": "",
+      "is_approved": true,
+      "transaction_created_date": "2023-12-06T13:54:39.735Z",
+      "transaction_settled_date": null,
+      "amount": -2000000,
+      "process_method": "Cash",
+      "category": "Withdrawal",
+      "interaction_point": "ATM",
+      "description": "NEW YORK NY #238490 WITHDR 12/6",
+      "status": "Completed",
+      "status_detail": "Completed - Posted",
+      "currency": "USD",
+      "is_triggered_by_user": false,
+      "type_code": "ATM01",
+      "type_description": "ATM Cash Withdrawal",
+      "counterparty": {
+        "external_counterparty_id": "3aa2847d603b3b81c8461a4311c2982f",
+        "account_type": "Merchant",
+        "account_name": "BOA NEW YORK NY #238490 ATM",
+        "account_number": "BOA NEW YORK NY #238490",
+        "country_code": "US"
+      },
+      "supplemental_data": null,
+      "meta": null
+    },
+    "evaluations": [],
+    "journey_applications": []
+  },
+  "error": null
+}
