@@ -1,174 +1,131 @@
-using FluentValidation;
-using Microsoft.Extensions.Options;
-using PaymentServices.Gateway.Models;
-using System.Text.RegularExpressions;
+customers: partitionkey /id
 
-namespace PaymentServices.Gateway.Validators;
-
-/// <summary>
-/// Validates the inbound <see cref="TchSendRequest"/> from RTPSend.
-/// Mirrors all validation logic from the Node validateTptchPayload method.
-/// </summary>
-public sealed class TchSendRequestValidator : AbstractValidator<TchSendRequest>
 {
-    private static readonly Regex AccountNumberPattern =
-        new(@"^[0-9]{4,17}$", RegexOptions.Compiled);
+    "name": {
+        "first": "Bob",
+        "last": "Williams"
+    },
+    "parentId": "CURIO_PLATFORM_ID",
+    "accountIds": [
+        "c3e57549-1a47-4793-914a-ec0d138087b5"
+    ],
+    "remoteAccountIds": [
+        "eed3594f-2b85-4e8e-814f-da4c3e7b731a"
+    ],
+    "id": "6ee038fc-fd01-40e3-82a1-7140e964f8a7",
+    "createdAt": "2026-05-01T02:43:52.8982673Z",
+    "updatedAt": "2026-05-01T02:43:52.8982674Z",
+    "_rid": "k8UbAJZ-8qsIAAAAAAAAAA==",
+    "_self": "dbs/k8UbAA==/colls/k8UbAJZ-8qs=/docs/k8UbAJZ-8qsIAAAAAAAAAA==/",
+    "_etag": "\"2f005c1d-0000-0300-0000-69f414720000\"",
+    "_attachments": "attachments/",
+    "_ts": 1777603698
+}
 
-    public TchSendRequestValidator(IOptions<GatewaySettings> settings)
-    {
-        var gatewaySettings = settings.Value;
+remoteaccounts - partitionkey /accountNumber
+{
+    "accountNumber": "2222222222",
+    "fiAbaNumber": "084009593",
+    "fiName": "Evolve Bank and Trust",
+    "ownerIds": [
+        "6ee038fc-fd01-40e3-82a1-7140e964f8a7"
+    ],
+    "nickname": "remote account",
+    "id": "eed3594f-2b85-4e8e-814f-da4c3e7b731a",
+    "createdAt": "2026-05-01T02:47:56.1879646Z",
+    "updatedAt": "2026-05-01T02:47:56.1879648Z",
+    "_rid": "k8UbALqXHFwFAAAAAAAAAA==",
+    "_self": "dbs/k8UbAA==/colls/k8UbALqXHFw=/docs/k8UbALqXHFwFAAAAAAAAAA==/",
+    "_etag": "\"0900b25c-0000-0300-0000-69f4145f0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1777603679
+}
 
-        // EvolveId
-        RuleFor(x => x.EvolveId)
-            .NotEmpty()
-            .WithMessage("No evolveId provided.")
-            .WithErrorCode("INVALID_VALUE");
-
-        // FintechId
-        RuleFor(x => x.FintechId)
-            .NotEmpty()
-            .WithMessage("No fintechId provided.")
-            .WithErrorCode("INVALID_VALUE");
-
-        RuleFor(x => x.FintechId)
-            .Must(id => gatewaySettings.GetAllowedFintechIds().Contains(id))
-            .When(x => !string.IsNullOrWhiteSpace(x.FintechId))
-            .WithMessage("Invalid fintechId value.")
-            .WithErrorCode("INVALID_VALUE");
-
-        // TaxId
-        RuleFor(x => x.TaxId)
-            .NotEmpty()
-            .WithMessage("No taxId provided.")
-            .WithErrorCode("INVALID_VALUE");
-
-        // Amount
-        RuleFor(x => x.Amount)
-            .NotEmpty()
-            .WithMessage("No amount provided.")
-            .WithErrorCode("INVALID_VALUE");
-
-        RuleFor(x => x.Amount)
-            .Must(BeAValidAmount)
-            .When(x => !string.IsNullOrWhiteSpace(x.Amount))
-            .WithMessage("Invalid amount. Please check your formatting.")
-            .WithErrorCode("INCORRECT_FORMAT");
-
-        RuleFor(x => x.Amount)
-            .Must(NotExceedTwoDecimalPlaces)
-            .When(x => !string.IsNullOrWhiteSpace(x.Amount))
-            .WithMessage("Amount must not exceed 2 decimal places.")
-            .WithErrorCode("INCORRECT_FORMAT");
-
-
-        // Source Account
-        RuleFor(x => x.SourceAccount).NotNull()
-            .WithMessage("sourceAccount is required.")
-            .WithErrorCode("INVALID_VALUE");
-
-        When(x => x.SourceAccount is not null, () =>
-        {
-            RuleFor(x => x.SourceAccount.AccountNumber)
-                .NotEmpty()
-                .WithMessage("No sourceAccount.accountNumber provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.SourceAccount.AccountNumber)
-                .Must(n => AccountNumberPattern.IsMatch(n.Trim().Replace(" ", "")))
-                .When(x => !string.IsNullOrWhiteSpace(x.SourceAccount.AccountNumber))
-                .WithMessage("Source account number must contain 4-17 numeric digits.")
-                .WithErrorCode("INVALID_FORMAT");
-
-            RuleFor(x => x.SourceAccount.AccountNumber)
-                .Must(n => gatewaySettings.GetSourceAccountPrefixes()
-                    .Any(prefix => n.Trim().StartsWith(prefix)))
-                .When(x => !string.IsNullOrWhiteSpace(x.SourceAccount?.AccountNumber)
-                    && gatewaySettings.GetSourceAccountPrefixes().Any())
-                .WithMessage("Invalid sourceAccount.accountNumber provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.SourceAccount.RoutingNumber)
-                .NotEmpty()
-                .Length(9)
-                .WithMessage("Invalid sourceAccount.routingNumber provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.SourceAccount.Name)
-                .NotNull()
-                .WithMessage("No sourceAccount.name provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.SourceAccount.Name)
-                .Must(HaveValidName)
-                .When(x => x.SourceAccount.Name is not null)
-                .WithMessage("sourceAccount.name must have either first+last or company.")
-                .WithErrorCode("INVALID_VALUE");
-
-            // Business account must have company name
-            When(x => x.UserIsBusiness, () =>
-            {
-                RuleFor(x => x.SourceAccount.Name.Company)
-                    .NotEmpty()
-                    .WithMessage("Business account must have at minimum a company name.")
-                    .WithErrorCode("INVALID_VALUE");
-            });
-        });
+accounts - partitionkey /accountNumber
+{
+    "id": "CURIO_RTP_ACCOUNT_ID",
+    "pk": "9990000001",
+    "accountNumber": "9990000001",
+    "ledgerId": "3ec0640d-9d4d-4358-b8ee-9080d8554173",
+    "_type": "Account",
+    "kind": "RTPPrefund",
+    "ownerIds": [
+        "CURIO_NONIND_CUST_ID"
+    ],
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "_rid": "k8UbAK90lK4BAAAAAAAAAA==",
+    "_self": "dbs/k8UbAA==/colls/k8UbAK90lK4=/docs/k8UbAK90lK4BAAAAAAAAAA==/",
+    "_etag": "\"0000d77a-0000-0300-0000-69e4462b0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1776567851
+}
 
 
-        // Destination Account
-        RuleFor(x => x.DestinationAccount).NotNull()
-            .WithMessage("destinationAccount is required.")
-            .WithErrorCode("INVALID_VALUE");
+Request I am sending
+{
+    "paymentReference": "b8613df-1c6f-6766-97ae-g8d7b90a9ad9",
+    "sourceAccountId": null,
+    "sourceAccount": {
+        "accountNumber": "9010010000000001",
+        "name": {
+            "company": null,
+            "first": "Earnin",
+            "last": "Merchant"
+        },
+        "address": null,
+        "routingNumber": "084009593",
+        "accountType": "S",
+        "debtorBankMemberID": null,
+        "debtorIdOther": null
+    },
+    "destinationAccountId": null,
+    "destinationAccount": {
+        "accountNumber": "900397187386253",
+        "name": {
+            "company": null,
+            "first": "Sarah",
+            "last": "Robinson"
+        },
+        "routingNumber": "101115315",
+        "accountType": "C",
+        "address": {
+            "addressLines": [
+                "123 First Street"
+            ],
+            "city": "Omaha",
+            "county": null,
+            "countryISOCode": "840",
+            "postalCode": "",
+            "stateCode": "NE"
+        },
+        "phoneNumber": "4022221144",
+        "creditorAgentTCHMemberID": null,
+        "creditorIdOther": null
+    },
+    "amount": "0.90",
+    "ultimateDebtor": {
+        "name": "ultimate"
+    },
+    "sourceCurrency": null,
+    "paymentCurrency": null,
+    "softDescriptor":null
+}
 
-        When(x => x.DestinationAccount is not null, () =>
-        {
-            RuleFor(x => x.DestinationAccount.AccountNumber)
-                .NotEmpty()
-                .WithMessage("No destinationAccount.accountNumber provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.DestinationAccount.AccountNumber)
-                .Must(n => AccountNumberPattern.IsMatch(n.Trim().Replace(" ", "")))
-                .When(x => !string.IsNullOrWhiteSpace(x.DestinationAccount.AccountNumber))
-                .WithMessage("Destination account number must contain 4-17 numeric digits.")
-                .WithErrorCode("INVALID_FORMAT");
-
-            RuleFor(x => x.DestinationAccount.RoutingNumber)
-                .NotEmpty()
-                .Length(9)
-                .WithMessage("Invalid destinationAccount.routingNumber provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.DestinationAccount.Name)
-                .NotNull()
-                .WithMessage("No destinationAccount.name provided.")
-                .WithErrorCode("INVALID_VALUE");
-
-            RuleFor(x => x.DestinationAccount.Name)
-                .Must(HaveValidName)
-                .When(x => x.DestinationAccount.Name is not null)
-                .WithMessage("destinationAccount.name must have either first+last or company.")
-                .WithErrorCode("INVALID_VALUE");
-        });
-    }
-
-    private static bool BeAValidAmount(string amount)
-    {
-        return decimal.TryParse(amount, out var value) && value > 0;
-    }
-
-    private static bool NotExceedTwoDecimalPlaces(string amount)
-    {
-        if (!amount.Contains('.')) return true;
-        var decimalPart = amount.Split('.')[1];
-        return decimalPart.Length <= 2;
-    }
-
-    private static bool HaveValidName(AccountName name)
-    {
-        var hasCompany = !string.IsNullOrWhiteSpace(name.Company);
-        var hasIndividual = !string.IsNullOrWhiteSpace(name.First)
-                            && !string.IsNullOrWhiteSpace(name.Last);
-        return hasCompany || hasIndividual;
-    }
+partnerledger it resolves to
+{
+    "id": "857b7d78-f65c-4928-b52b-f6d7c75168a5",
+    "vAccountNumber": "9010010000000001",
+    "fboAccount": "9900013724",
+    "fboAccountName": "Evolve Bank & Trust",
+    "CIFNO": "EAA0617",
+    "taxId": "222222222",
+    "userIsBusiness": "0",
+    "accountStatus": "ACTIVE",
+    "errorMessage": null,
+    "_rid": "9M85AIR0Hn0IAAAAAAAAAA==",
+    "_self": "dbs/9M85AA==/colls/9M85AIR0Hn0=/docs/9M85AIR0Hn0IAAAAAAAAAA==/",
+    "_etag": "\"8d00808d-0000-0300-0000-6a11b74d0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1779545933
 }
