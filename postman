@@ -1,13 +1,35 @@
-Starting: Deploy Bicep to QA
-==============================================================================
-Task         : ARM template deployment
-Description  : Deploy an Azure Resource Manager (ARM) template to all the deployment scopes
-Version      : 3.273.0
-Author       : Microsoft Corporation
-Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-resource-group-deployment
-==============================================================================
-ARM Service Connection deployment scope - Subscription
-Checking if the following resource group exists: rg-pmtsvc-qa.
-##[error]Check out the troubleshooting guide to see if your issue is addressed: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-resource-group-deployment?view=azure-devops#troubleshooting
-##[error]Failed to check the resource group status. Error: {"statusCode":400}.
-Finishing: Deploy Bicep to QA
+"statusHistory": [
+        {
+            "stage": "RTP_API",
+            "status": "RECEIVED",
+            "statusDate": "2026-06-01T22:30:08.6229354Z"
+        },
+        {
+            "stage": "ACCOUNTLOOKUP",
+            "status": "COMPLETED",
+            "statusDate": "2026-06-01T22:30:09.5309807Z",
+            "addInfo": "PartnerLedgerLookup completed"
+        },
+        {
+            "stage": "ACCOUNTLOOKUP",
+            "status": "INITIATED",
+            "statusDate": "2026-06-01T22:30:13.1115163Z",
+            "addInfo": {
+                "message": "Submitted to Gateway tptch/send"
+            }
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "COMPLETED",
+            "statusDate": "2026-06-01T22:31:20.7432682Z",
+            "addInfo": "{\"SC\":200,\"EC\":\"0\",\"transactionID\":\"xa8ebhOVUkWQOqoxLxn7UQ\",\"network\":\"RTP\",\"networkRC\":\"000\",\"networkID\":\"20260601101115315T1BTABA01780353080\",\"status\":\"COMPLETED\",\"approvalCode\":\"583721\"}"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "COMPLETED",
+            "statusDate": "2026-06-01T22:31:20.7948989Z",
+            "addInfo": {
+                "message": "TabaPay completed",
+                "tabaPayTransactionId": "xa8ebhOVUkWQOqoxLxn7UQ"
+            }
+        }
