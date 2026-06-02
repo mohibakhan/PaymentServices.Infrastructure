@@ -6,6 +6,7 @@ using PaymentServices.RTPSend.Constants;
 using PaymentServices.RTPSend.Helpers;
 using PaymentServices.RTPSend.Interface.Adapters;
 using PaymentServices.RTPSend.Interface.Services;
+using PaymentServices.RTPSend.Models;
 using PaymentServices.RTPSend.Models.Domain;
 using PaymentServices.Shared.Enums;
 using PaymentServices.Shared.Messages;
@@ -36,15 +37,18 @@ public class HandlePaymentOutcome
 
     private readonly IPaymentCosmosDBAdapter _paymentCosmosDB;
     private readonly ITabaPaySendService _tabaPay;
+    private readonly IServiceBusMessageService _serviceBus;
     private readonly ILogger<HandlePaymentOutcome> _logger;
 
     public HandlePaymentOutcome(
         IPaymentCosmosDBAdapter paymentCosmosDB,
         ITabaPaySendService tabaPay,
+        IServiceBusMessageService serviceBus,
         ILogger<HandlePaymentOutcome> logger)
     {
         _paymentCosmosDB = paymentCosmosDB;
         _tabaPay = tabaPay;
+        _serviceBus = serviceBus;
         _logger = logger;
     }
 
@@ -118,20 +122,21 @@ public class HandlePaymentOutcome
         _logger.LogInformation("Transfer succeeded; calling TabaPay for {EvolveId}.", outcome.EvolveId);
 
         // TabaPayProcessingException bubbles up → SB retries, then DLQ.
+        // ProcessPayment already patches the doc to TABAPAY/COMPLETED (with the
+        // raw TabaPay response + transaction ids) and sets the top-level status.
         var sendResult = await _tabaPay.ProcessPayment(payment);
 
-        var patches = EvolvePaymentRequestHelper.GetStatusPatchOperation(
-            RequestStage.TABAPAY,
-            RequestStatus.COMPLETED,
-            additionalInfo: new
-            {
-                Message = "TabaPay completed",
-                TabaPayTransactionId = sendResult.Document.TabaPayTransactionId
-            });
-
-        await _paymentCosmosDB.PatchItemAsync(payment, patches);
-
         _logger.LogInformation("Payment {EvolveId} COMPLETED via TabaPay.", outcome.EvolveId);
+
+        // Notify downstream (webhook caller — out of scope, handled by another
+        // team). Publishes to payment-processing with subject
+        // 'CreatePayment - Success'; a dedicated subscription consumes it.
+        await PublishNotificationAsync(
+            sendResult.Document,
+            success: true,
+            subject: PaymentRequestConstants.SuccessServiceBusSubject,
+            tabaPayResponse: sendResult.Response,
+            comments: "Payment completed via TabaPay");
     }
 
     private async Task HandleFailureAsync(PaymentMessage outcome, CancellationToken cancellationToken)
@@ -160,10 +165,63 @@ public class HandlePaymentOutcome
                 Reason = outcome.FailureReason
             });
 
-        await _paymentCosmosDB.PatchItemAsync(payment, patches);
+        var patched = await _paymentCosmosDB.PatchItemAsync(payment, patches) ?? payment;
 
         _logger.LogWarning(
             "Payment {EvolveId} marked {Status} ({State}): {Reason}",
             outcome.EvolveId, status, outcome.State, outcome.FailureReason);
+
+        // Notify downstream (webhook caller — out of scope). Subject
+        // 'CreatePayment - Failure'.
+        await PublishNotificationAsync(
+            patched,
+            success: false,
+            subject: PaymentRequestConstants.FailureServiceBusSubject,
+            tabaPayResponse: null,
+            comments: outcome.FailureReason ?? $"Pipeline failure: {outcome.State}");
+    }
+
+    /// <summary>
+    /// Builds the lifecycle envelope from the payment document and publishes it
+    /// to the payment-processing topic with the given subject. Consumed by a
+    /// downstream subscription that calls the TabaPay webhook (out of scope —
+    /// owned by another team). Best-effort: a publish failure is logged but does
+    /// not fail the function (the payment itself is already settled).
+    /// </summary>
+    private async Task PublishNotificationAsync(
+        EvolvePaymentRequest payment,
+        bool success,
+        string subject,
+        Models.Response.TabaPayResponse? tabaPayResponse,
+        string? comments)
+    {
+        try
+        {
+            var envelope = ServiceBusHelper.CreateServiceBusMessage(
+                payment,
+                success: success,
+                additionalInfo: new
+                {
+                    payment.PaymentReference,
+                    Status = payment.Status
+                },
+                comments: comments);
+
+            if (tabaPayResponse is not null)
+                envelope.TabaPayResponse = tabaPayResponse;
+
+            await _serviceBus.SendMessageToServiceBusAsync(envelope, subject);
+
+            _logger.LogInformation(
+                "Published '{Subject}' notification for EvolveId={EvolveId}.",
+                subject, payment.EvolveId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to publish '{Subject}' notification for EvolveId={EvolveId}. " +
+                "Payment is settled; notification will need manual replay.",
+                subject, payment.EvolveId);
+        }
     }
 }
