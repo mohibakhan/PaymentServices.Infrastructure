@@ -126,6 +126,34 @@ resource rtpsendOutcomeFilter 'Microsoft.ServiceBus/namespaces/topics/subscripti
   }
 }
 
+// tabapay-webhook — consumed by the webhook caller (owned by another team,
+// out of scope here). RTPSend's HandlePaymentOutcome publishes a lifecycle
+// notification with subject 'CreatePayment - Success' / 'CreatePayment - Failure'
+// after a payment settles. The message Subject surfaces as sys.Label in SQL
+// filters, so the rule matches on sys.Label (not the 'state' property).
+resource tabapayWebhookSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2022-10-01-preview' = {
+  parent: paymentTopic
+  name: 'tabapay-webhook'
+  properties: {
+    maxDeliveryCount: 10
+    lockDuration: 'PT1M'
+    defaultMessageTimeToLive: 'P14D'
+    deadLetteringOnMessageExpiration: true
+    deadLetteringOnFilterEvaluationExceptions: true
+  }
+}
+
+resource tabapayWebhookFilter 'Microsoft.ServiceBus/namespaces/topics/subscriptions/rules@2022-10-01-preview' = {
+  parent: tabapayWebhookSubscription
+  name: 'tabapay-webhook-filter'
+  properties: {
+    filterType: 'SqlFilter'
+    sqlFilter: {
+      sqlExpression: 'sys.Label = \'CreatePayment - Success\' OR sys.Label = \'CreatePayment - Failure\''
+    }
+  }
+}
+
 // -------------------------------------------------------------------------
 // Outputs
 // -------------------------------------------------------------------------
