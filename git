@@ -1,12 +1,176 @@
-# Bicep compiled output
-*.json
-!*parameters*.json
+Install-Package Evolve.Digital.KeywordScreen.Shared -version 1.0.0
+Install-Package Evolve.Digital.LimitsService.Shared.Internal -version 1.0.0
 
-# OS
-.DS_Store
-Thumbs.db
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Azure.Cosmos;
+using Evolve.Digital.LimitsService.Shared.Services;
+using Evolve.Digital.LimitsService.Shared.Internal;
+using Evolve.Digital.KeywordScreen.Shared.Services;
+using Evolve.Digital.LimitsService.Shared.Internal.Models;
 
-# IDE
-.vs/
-.idea/
-*.user
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configuration Defaultsvar cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"] ?? "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";var databaseName = builder.Configuration["CosmosDb:DatabaseName"] ?? "paas-db";
+
+// Register Servicesbuilder.Services.AddSingleton(s => new CosmosClient(cosmosConnectionString));
+
+// Limits Service Setupbuilder.Services.AddScoped<ILimitsService>(s =>
+    new Evolve.Digital.LimitsService.Shared.Services.LimitsService(
+
+        s.GetRequiredService<CosmosClient>(), 
+
+        databaseName));builder.Services.AddScoped<ILimitsInternalClient, LimitsInternalClient>();
+
+// Keyword Screen Setupbuilder.Services.AddScoped<IKeywordScreenService>(s =>
+    new KeywordScreenService(
+
+        s.GetRequiredService<CosmosClient>(), 
+
+        databaseName));
+
+using IHost host = builder.Build();
+
+Console.WriteLine("================================================");Console.WriteLine("   Services Test Console Application Initialized");Console.WriteLine("================================================");
+
+await RunTests(host.Services);
+
+async Task RunTests(IServiceProvider services)
+
+{
+
+    using var scope = services.CreateScope();
+
+    var limitsClient = scope.ServiceProvider.GetRequiredService<ILimitsInternalClient>();
+
+    var keywordService = scope.ServiceProvider.GetRequiredService<IKeywordScreenService>();
+
+
+    // Test Keyword ScreeningConsole.WriteLine("\n[TEST] Keyword Screening Service");
+
+    try 
+
+    {
+
+        Console.WriteLine("-> Loading keywords...");
+
+        await keywordService.ReloadKeywordsAsync();
+
+
+        var safeText = "This is a normal payment request.";
+
+        var result = keywordService.ScreenText(safeText);
+
+        Console.WriteLine($"-> Text: '{safeText}' | Result: {(result.IsPositive ? "MATCH FOUND" : "Clear")}");
+
+    }
+
+    catch (Exception ex)
+
+    {
+
+        Console.WriteLine($"!! Keyword Screening Error: {ex.Message}");
+
+    }
+
+
+    // Test Category Limits EvaluationConsole.WriteLine("\n[TEST] Limits Internal Client (Category Check)");
+
+    try 
+
+    {
+
+        var categoryRequest = new EvaluateCategoryRequest 
+
+        (
+
+            PartitionKey: "9990000001",
+
+            Category: "Send",
+
+            Amount: 500.00m,
+
+            UpdateUsage: false  // set true to increase the usage so far for aggregate daily/weekly,monthgly, etc). does nothing for item limit        );
+
+
+        Console.WriteLine($"-> Evaluating all limits in category '{categoryRequest.Category}' for {categoryRequest.Amount}...");
+
+        var response = await limitsClient.EvaluateCategoryLimitsAsync(categoryRequest);
+
+
+        if (response.Approved)
+
+        {
+
+            Console.WriteLine("-> Approval Status: APPROVED (All category limits passed)");
+
+        }
+
+        else        {
+
+            Console.WriteLine($"-> Approval Status: DENIED | Failed Limit: {response.FailedLimit?.LimitType} | Message: {response.Message}");
+
+        }
+
+    }
+
+    catch (Exception ex)
+
+    {
+
+        Console.WriteLine($"!! Category Limits Evaluation Error: {ex.Message}");
+
+    }
+
+
+    Console.WriteLine("\n================================================");
+
+    Console.WriteLine("   All tests completed.");
+
+    Console.WriteLine("================================================");
+
+}
+
+    // Test Limits EvaluationConsole.WriteLine("\n[TEST] Limits Internal Client");
+
+    try 
+
+    {
+
+        var request = new EvaluateLimitRequest 
+
+        (
+
+            PartitionKey: "CORE_BANKING",
+
+            Id: "MAX_TXN_AMOUNT",
+
+            Amount: 500.00m,
+
+            UpdateUsage: false        );
+
+
+        Console.WriteLine($"-> Evaluating limit for {request.Amount} in {request.PartitionKey}...");
+
+        var response = await limitsClient.EvaluateLimitAsync(request);
+
+        Console.WriteLine($"-> Approval Status: {(response.Approved ? "APPROVED" : "DENIED")}");
+
+    }
+
+    catch (Exception ex)
+
+    {
+
+        Console.WriteLine($"!! Limits Evaluation Error: {ex.Message}");
+
+    }
+
+
+    Console.WriteLine("\n================================================");
+
+    Console.WriteLine("   All tests completed.");
+
+    Console.WriteLine("================================================");
+
+}
