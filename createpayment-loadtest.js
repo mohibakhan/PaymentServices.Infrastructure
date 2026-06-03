@@ -29,6 +29,13 @@ BASE_URL = os.environ.get("BASE_URL", "")
 FUNCTION_KEY = os.environ.get("FUNCTION_KEY", "")
 AMOUNT = os.environ.get("AMOUNT", "0.90")
 
+# CreatePayment requires these three auth headers; the next check after the
+# header presence test looks up apiUserConfig by (clientId, merchantId,
+# subscriptionKey), so they must be VALID values (same as a working request).
+CLIENT_ID = os.environ.get("CLIENT_ID", "")
+MERCHANT_ID = os.environ.get("MERCHANT_ID", "")
+SUBSCRIPTION_KEY = os.environ.get("SUBSCRIPTION_KEY", "")
+
 
 class CreatePaymentUser(HttpUser):
     # Each user attempts to keep a steady 1 request/sec. Target TPS = user count.
@@ -41,6 +48,10 @@ class CreatePaymentUser(HttpUser):
         self.headers = {"Content-Type": "application/json"}
         if FUNCTION_KEY:
             self.headers["x-functions-key"] = FUNCTION_KEY
+        # Required by CreatePayment's header presence check + apiUserConfig lookup.
+        self.headers["x-client-id"] = CLIENT_ID
+        self.headers["x-merchant-id"] = MERCHANT_ID
+        self.headers["ocp-apim-subscription-key"] = SUBSCRIPTION_KEY
 
     @task
     def create_payment(self):
@@ -92,6 +103,10 @@ class CreatePaymentUser(HttpUser):
         ) as resp:
             if resp.status_code in (200, 202):
                 resp.success()
+            elif resp.status_code == 400:
+                resp.failure("400 validation — check the 3 auth headers are present")
+            elif resp.status_code == 403:
+                resp.failure("403 forbidden — client/merchant/subscription values don't match apiUserConfig")
             elif resp.status_code == 409:
                 resp.failure("Unexpected dedupe (409) — paymentReference collision")
             else:
