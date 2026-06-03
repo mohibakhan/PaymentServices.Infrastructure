@@ -1,142 +1,50 @@
-{
-    "id": "3fd9d99d-22a5-4644-afbd-a93af9919347",
-    "evolveId": "8960006a-57d5-4c51-8c0a-54012b1b62c1",
-    "createdTimeStamp": "2026-06-03T20:06:11.7124621Z",
-    "modifiedTimeStamp": "2026-06-03T20:06:36.2326446Z",
-    "status": "FAILED",
-    "stage": "TABAPAY",
-    "documentType": "CreatePayment",
-    "documentSubType": "TabaPay",
-    "tranCode": "21",
-    "achOptions": "R",
-    "type": "push",
-    "clientId": "Bm0RU8eASGfSxLYJjsG73Q",
-    "merchantId": "1070",
-    "statusHistory": [
-        {
-            "stage": "RTP_API",
-            "status": "RECEIVED",
-            "statusDate": "2026-06-03T20:06:11.7124621Z"
-        },
-        {
-            "stage": "ACCOUNTLOOKUP",
-            "status": "COMPLETED",
-            "statusDate": "2026-06-03T20:06:11.7942510Z",
-            "addInfo": "PartnerLedgerLookup completed"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "INITIATED",
-            "statusDate": "2026-06-03T20:06:11.9318900Z",
-            "addInfo": {
-                "message": "Ledger reservation completed",
-                "reservationId": "670c4fbf-6b9f-4081-b7b1-df4f9f5c73b1"
-            }
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:29.2882804Z",
-            "addInfo": "<html>\r\n<head><title>503 Service Temporarily Unavailable</title></head>\r\n<body>\r\n<center><h1>503 Service Temporarily Unavailable</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:35.7036083Z",
-            "addInfo": "<html>\r\n<head><title>503 Service Temporarily Unavailable</title></head>\r\n<body>\r\n<center><h1>503 Service Temporarily Unavailable</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:35.7645922Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:35.8265883Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:35.9012043Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:35.9592230Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:36.0413502Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:36.1047077Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:36.1772352Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "FAILED",
-            "statusDate": "2026-06-03T20:06:36.2326446Z",
-            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
-        }
-    ],
-    "valueDate": "2026-06-03T20:06:11.7124621Z",
-    "userIsBusiness": false,
-    "paymentReference": "e4ce3fe9-550a-427a-a380-fc309d9d1ac3",
-    "sourceAccount": {
-        "accountNumber": "9010010000000001",
-        "name": {
-            "first": "Earnin",
-            "last": "Merchant"
-        },
-        "routingNumber": "084009593",
-        "accountType": "S"
-    },
-    "destinationAccount": {
-        "accountNumber": "900397187386253",
-        "name": {
-            "first": "Sarah",
-            "last": "Robinson"
-        },
-        "routingNumber": "101115315",
-        "accountType": "C",
-        "address": {
-            "addressLines": [
-                "123 First Street"
-            ],
-            "city": "Omaha",
-            "countryISOCode": "840",
-            "postalCode": "",
-            "stateCode": "NE"
-        },
-        "phoneNumber": "4022221144"
-    },
-    "amount": "0.10",
-    "ultimateDebtor": {
-        "name": "ultimate"
-    },
-    "paymentCurrency": "840",
-    "_rid": "IK55AMQyu9USAAAAAAAAAA==",
-    "_self": "dbs/IK55AA==/colls/IK55AMQyu9U=/docs/IK55AMQyu9USAAAAAAAAAA==/",
-    "_etag": "\"4f01045b-0000-0300-0000-6a20894c0000\"",
-    "_attachments": "attachments/",
-    "fboAccount": "9900013724",
-    "fboAccountName": "Evolve Bank & Trust",
-    "fintechId": "EAA0617",
-    "taxId": "222222222",
-    "_ts": 1780517196
-}
+4:23:14.464 PM	Request	Name: CreatePayment, Successful request: true, Response time: 125.1 ms, URL: https://fa-pmtsvc-rtpsend-qa-centralus.azurewebsites.net/api/CreatePayment
+4:23:14.470 PM	Trace	Severity level: Information, Message: Executing 'Functions.CreatePayment' (Reason='This function was programmatically called via the host APIs.', Id=d648eee7-3f64-4701-9e51-42b90efc4734)
+4:23:14.473 PM	Internal	Name: Invoke, Type: InProc, Call status: true, Duration: 109.9 ms
+4:23:14.474 PM	Trace	Severity level: Information, Message: Request starting HTTP/1.1 POST http://localhost:50619/api/CreatePayment?code=5DNF3vQjhmD4vz7gOmKwKgstdGAMkJjV5GCi0-6t9jmgAzFuUWe3Dg== - application/json 1332
+4:23:14.476 PM	Trace	Severity level: Information, Message: Executing endpoint 'CreatePayment'
+4:23:14.479 PM	Trace	Severity level: Information, Message: Request body: {"paymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","sourceAccountId":null,"sourceAccount":{"accountNumber":"9010010000000001","name":{"company":null,"first":"Earnin","last":"Merchant"},"address":null,"routingNumber":"084009593","accountType":"S","debtorBankMemberID":null,"debtorIdOther":null},"destinationAccountId":null,"destinationAccount":{"accountNumber":"900397187386253","name":{"company":null,"first":"Sarah","last":"Robinson"},"routingNumber":"101115315","accountType":"C","address":{"addressLines":["123 First Street"],"city":"Omaha","county":null,"countryISOCode":"840","postalCode":"","stateCode":"NE"},"phoneNumber":"4022221144","creditorAgentTCHMemberID":null,"creditorIdOther":null},"amount":"0.10","ultimateDebtor":{"name":"ultimate"},"sourceCurrency":null,"paymentCurrency":null,"softDescriptor":null,"remittanceInformation":null}
+4:23:14.554 PM	Trace	Severity level: Information, Message: Sending message to payment-processing with subject CreatePaymentRequest: {"evolveId":"a837ad29-4f16-4098-a79c-4f71811491de","paymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","enqueuedAt":"2026-06-03T20:23:14.5501832+00:00"}
+4:23:14.554 PM	Dependency	Name: Message, Type: Queue Message | Azure Service Bus, Call status: true, Duration: 87.1 μs
+4:23:14.554 PM	Dependency	Name: ServiceBusSender.Send, Type: Azure Service Bus, Call status: true, Duration: 25.0 ms
+4:23:14.582 PM	Trace	Severity level: Information, Message: Response: {"evolveId":"a837ad29-4f16-4098-a79c-4f71811491de","paymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","status":"Accepted"}
+4:23:14.582 PM	Trace	Severity level: Information, Message: Executing AcceptedResult, writing value of type 'PaymentServices.RTPSend.Models.Response.CreatePaymentResponse'.
+4:23:14.583 PM	Trace	Severity level: Information, Message: Executed endpoint 'CreatePayment'
+4:23:14.583 PM	Trace	Severity level: Information, Message: Request finished HTTP/1.1 POST https://fa-pmtsvc-rtpsend-qa-centralus.azurewebsites.net/api/CreatePayment?code=5DNF3vQjhmD4vz7gOmKwKgstdGAMkJjV5GCi0-6t9jmgAzFuUWe3Dg== - 202 - application/json;+charset=utf-8 108.7954ms
+4:23:14.589 PM	Trace	Severity level: Information, Message: Executed 'Functions.CreatePayment' (Succeeded, Id=d648eee7-3f64-4701-9e51-42b90efc4734, Duration=119ms)
+4:23:14.629 PM	Request	Name: ProcessPayment, Successful request: true, Response time: 3.3 s
+4:23:14.699 PM	Trace	Severity level: Information, Message: Executing 'Functions.ProcessPayment' (Reason='(null)', Id=8c9aab45-d759-4289-81b2-222063081f4d)
+4:23:14.699 PM	Trace	Severity level: Information, Message: Trigger Details: MessageId: 3249b459e5f14d12b4009e82ecbb800e, SequenceNumber: 36, DeliveryCount: 1, EnqueuedTimeUtc: 2026-06-03T20:23:14.5750000+00:00, LockedUntilUtc: 2026-06-03T20:28:14.5910000+00:00, SessionId: (null)
+4:23:14.713 PM	Internal	Name: Invoke, Type: InProc, Call status: true, Duration: 3.1 s
+4:23:14.729 PM	Trace	Severity level: Information, Message: ProcessPayment received message 3249b459e5f14d12b4009e82ecbb800e: {"evolveId":"a837ad29-4f16-4098-a79c-4f71811491de","paymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","enqueuedAt":"2026-06-03T20:23:14.5501832+00:00"}
+4:23:14.756 PM	Trace	Severity level: Information, Message: Processing payment evolveId a837ad29-4f16-4098-a79c-4f71811491de at stage RTP_API, status RECEIVED, delivery 1
+4:23:14.756 PM	Trace	Severity level: Information, Message: Resuming evolveId a837ad29-4f16-4098-a79c-4f71811491de from stage ACCOUNTLOOKUP
+4:23:14.761 PM	Dependency	Name: Get collection, Type: Azure DocumentDB, Call status: true, Duration: 90.0 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/payments/colls/partnerLedger
+4:23:14.853 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 4.9 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/IK55AA==/colls/IK55AL1b2Vs=/pkranges
+4:23:14.859 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 7.9 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/IK55AA==/colls/IK55AL1b2Vs=/pkranges
+4:23:14.869 PM	Dependency	Name: GET, Type: Azure DocumentDB, Call status: true, Duration: 5.0 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com//addresses/?$resolveFor=dbs%2fIK55AA%3d%3d%2fcolls%2fIK55AL1b2Vs%3d%2fdocs&$filter=protocol eq rntbd&$partitionKeyRangeIds=0
+4:23:14.928 PM	Trace	Severity level: Information, Message: Partner ledger lookup successful: {"vAccountNumber":"9010010000000001","fboAccount":"9900013724","fboAccountName":"Evolve Bank \u0026 Trust","CIFNO":"EAA0617","taxId":"222222222","userIsBusiness":"0","accountStatus":"ACTIVE","errorMessage":null}
+4:23:14.958 PM	Dependency	Name: Get collection, Type: Azure DocumentDB, Call status: true, Duration: 181.3 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/ledgers/colls/ledgers
+4:23:15.149 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 4.7 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/lgcOAA==/colls/lgcOAPQCod4=/pkranges
+4:23:15.154 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 4.6 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/lgcOAA==/colls/lgcOAPQCod4=/pkranges
+4:23:15.169 PM	Dependency	Name: GET, Type: Azure DocumentDB, Call status: true, Duration: 3.6 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com//addresses/?$resolveFor=dbs%2flgcOAA%3d%3d%2fcolls%2flgcOAPQCod4%3d%2fdocs&$filter=protocol eq rntbd&$partitionKeyRangeIds=0
+4:23:15.324 PM	Dependency	Name: Get collection, Type: Azure DocumentDB, Call status: true, Duration: 25.4 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/ledgers/colls/ledgerEntries
+4:23:15.353 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 4.8 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/lgcOAA==/colls/lgcOAP-MFp0=/pkranges
+4:23:15.358 PM	Dependency	Name: GET /dbs/*/colls/*/pkranges, Type: Azure DocumentDB, Call status: true, Duration: 4.0 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com/dbs/lgcOAA==/colls/lgcOAP-MFp0=/pkranges
+4:23:15.363 PM	Dependency	Name: GET, Type: Azure DocumentDB, Call status: true, Duration: 3.3 ms, Data: https://cosmos-paymentservices-qa-centralus-centralus.documents.azure.com//addresses/?$resolveFor=dbs%2flgcOAA%3d%3d%2fcolls%2flgcOAP-MFp0%3d%2fdocs&$filter=protocol eq rntbd&$partitionKeyRangeIds=0
+4:23:16.521 PM	Trace	Severity level: Information, Message: Ledger entry 3c286be8-c12f-4f3f-84a4-7e550da8f3de posted on ledger a0c1b2d3-e4f5-6789-abcd-ef0123456789 for evolveId a837ad29-4f16-4098-a79c-4f71811491de amount -0.10
+4:23:16.521 PM	Trace	Severity level: Information, Message: Ledger reservation 3c286be8-c12f-4f3f-84a4-7e550da8f3de for evolveId a837ad29-4f16-4098-a79c-4f71811491de
+4:23:16.530 PM	Trace	Severity level: Information, Message: TabaPay processing for evolveId a837ad29-4f16-4098-a79c-4f71811491de
+4:23:16.534 PM	Trace	Severity level: Information, Message: TabaPay request body: {"referenceID":"EWFZ4PQ5UFDGF4L","corresponding":{"name":{"first":"Earnin","last":"Merchant"},"accountNumber":"9010010000000001","sourceOfFunds":"Credit Account"},"type":"push","achOptions":"R","accounts":{"sourceAccountID":"yuEAY8eEwGafmufciZBrEQ","destinationAccount":{"bank":{"accountNumber":"900397187386253","routingNumber":"101115315","accountType":"C"},"owner":{"name":{"first":"Sarah","last":"Robinson"},"address":{"line1":"123 First Street","city":"Omaha","state":"NE","zipcode":"","country":"840"},"phone":{"number":"4022221144"}}}},"currency":"840","amount":"0.10"}
+4:23:16.534 PM	Trace	Severity level: Information, Message: Start processing HTTP request POST https://apitest.getevolved.com/v1/Transactions/Card
+4:23:16.534 PM	Trace	Severity level: Information, Message: Sending HTTP request POST https://apitest.getevolved.com/v1/Transactions/Card
+4:23:16.535 PM	Dependency	Name: POST /v1/Transactions/Card, Type: HTTP, Call status: true, Duration: 1.2 s, Data: https://apitest.getevolved.com/v1/Transactions/Card
+4:23:16.630 PM	Request	Name: POST /v1/Transactions/Card, Successful request: true, Response time: 1.1 s, URL: https://apitest.getevolved.com/v1/Transactions/Card
+4:23:17.768 PM	Trace	Severity level: Information, Message: Received HTTP response headers after 1233.2803ms - 200
+4:23:17.768 PM	Trace	Severity level: Information, Message: End processing HTTP request after 1233.8405ms - 200
+4:23:17.768 PM	Trace	Severity level: Information, Message: TabaPay raw response (OK): {"SC":200,"EC":"0","transactionID":"wb0OQsUUUUN9sJNJIVkD0w","network":"RTP","networkRC":"000","networkID":"20260603101115315T1BTABA01780518197","status":"COMPLETED","approvalCode":"609780"}
+4:23:17.782 PM	Trace	Severity level: Information, Message: Sending message to Service Bus topic payment-processing with subject CreatePayment - Success: {"evolveId":"a837ad29-4f16-4098-a79c-4f71811491de","paymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","sourceAccount":{"accountNumber":"9010010000000001","name":{"first":"Earnin","last":"Merchant"},"routingNumber":"084009593","accountType":"S"},"destinationAccount":{"accountNumber":"900397187386253","name":{"first":"Sarah","last":"Robinson"},"routingNumber":"101115315","accountType":"C"},"status":"COMPLETED","instructionId":"20260603101115315T1BTABA01780518197","pmtHandler":"TabaPay","amount":"0.10","success":true,"valueDate":"2026-06-03T20:23:14.5258146Z","sourceCurrency":"840","destinationCurrency":"840","cifno":"EAA0617","documentType":"CreatePayment","additionalInfo":{"PaymentReference":"b9613df-1c6i-5766-97ae-a9d7b90a9zd9","Status":"Completed","Message":"{\u0022SC\u0022:200,\u0022EC\u0022:\u00220\u0022,\u0022transactionID\u0022:\u0022wb0OQsUUUUN9sJNJIVkD0w\u0022,\u0022network\u0022:\u0022RTP\u0022,\u0022networkRC\u0022:\u0022000\u0022,\u0022networkID\u0022:\u002220260603101115315T1BTABA01780518197\u0022,\u0022status\u0022:\u0022COMPLETED\u0022,\u0022approvalCode\u0022:\u0022609780\u0022}"},"ultimateDebtor":{"name":"ultimate"},"clientId":"Bm0RU8eASGfSxLYJjsG73Q","merchantId":"1070","tabaPayResponse":{"SC":200,"EC":"0","transactionID":"wb0OQsUUUUN9sJNJIVkD0w","network":"RTP","networkRC":"000","networkID":"20260603101115315T1BTABA01780518197","status":"COMPLETED","approvalCode":"609780"}}
+4:23:17.782 PM	Dependency	Name: Message, Type: Queue Message | Azure Service Bus, Call status: true, Duration: 38.1 μs
+4:23:17.782 PM	Dependency	Name: ServiceBusSender.Send, Type: Azure Service Bus, Call status: true, Duration: 12.0 ms
+4:23:17.795 PM	Trace	Severity level: Information, Message: Processing completed for evolveId a837ad29-4f16-4098-a79c-4f71811491de
+4:23:17.796 PM	Trace	Severity level: Information, Message: Executed 'Functions.ProcessPayment' (Succeeded, Id=8c9aab45-d759-4289-81b2-222063081f4d, Duration=3135ms)
