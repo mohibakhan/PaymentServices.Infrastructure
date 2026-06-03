@@ -1,35 +1,9 @@
-"statusHistory": [
-        {
-            "stage": "RTP_API",
-            "status": "RECEIVED",
-            "statusDate": "2026-06-01T22:30:08.6229354Z"
-        },
-        {
-            "stage": "ACCOUNTLOOKUP",
-            "status": "COMPLETED",
-            "statusDate": "2026-06-01T22:30:09.5309807Z",
-            "addInfo": "PartnerLedgerLookup completed"
-        },
-        {
-            "stage": "ACCOUNTLOOKUP",
-            "status": "INITIATED",
-            "statusDate": "2026-06-01T22:30:13.1115163Z",
-            "addInfo": {
-                "message": "Submitted to Gateway tptch/send"
-            }
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "COMPLETED",
-            "statusDate": "2026-06-01T22:31:20.7432682Z",
-            "addInfo": "{\"SC\":200,\"EC\":\"0\",\"transactionID\":\"xa8ebhOVUkWQOqoxLxn7UQ\",\"network\":\"RTP\",\"networkRC\":\"000\",\"networkID\":\"20260601101115315T1BTABA01780353080\",\"status\":\"COMPLETED\",\"approvalCode\":\"583721\"}"
-        },
-        {
-            "stage": "TABAPAY",
-            "status": "COMPLETED",
-            "statusDate": "2026-06-01T22:31:20.7948989Z",
-            "addInfo": {
-                "message": "TabaPay completed",
-                "tabaPayTransactionId": "xa8ebhOVUkWQOqoxLxn7UQ"
-            }
-        }
+QA_APP_CONFIG_ENDPOINT : The term 'QA_APP_CONFIG_ENDPOINT' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At /home/vsts/work/_temp/azureclitaskscript1780497779346_inlinescript.ps1:12 char:26
++     appConfigEndpoint="$(QA_APP_CONFIG_ENDPOINT)" `
++                          ~~~~~~~~~~~~~~~~~~~~~~
++ CategoryInfo          : ObjectNotFound: (QA_APP_CONFIG_ENDPOINT:String) [], ParentContainsErrorRecordException
++ FullyQualifiedErrorId : CommandNotFoundException
+
+##[error]Script failed with exit code: 1
