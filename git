@@ -1,5 +1,5 @@
 {
-    "paymentReference": "b9624de-1c6i-5766-97ae-a9d7b90a9zd9",
+    "paymentReference": "b9623df-1c6i-5766-97ae-a9d7b90a9zd9",
     "sourceAccountId": null,
     "sourceAccount": {
         "accountNumber": "9010010000000001",
@@ -38,7 +38,7 @@
         "creditorAgentTCHMemberID": null,
         "creditorIdOther": null
     },
-    "amount": "0.90",
+    "amount": "0.10",
     "ultimateDebtor": {
         "name": "ultimate"
     },
