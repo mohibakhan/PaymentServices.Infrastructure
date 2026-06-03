@@ -1,24 +1,114 @@
 {
-    "paymentReference": "b9623df-1c6i-5766-97ae-a9d7b90a9zd9",
-    "sourceAccountId": null,
+    "id": "3fd9d99d-22a5-4644-afbd-a93af9919347",
+    "evolveId": "8960006a-57d5-4c51-8c0a-54012b1b62c1",
+    "createdTimeStamp": "2026-06-03T20:06:11.7124621Z",
+    "modifiedTimeStamp": "2026-06-03T20:06:36.2326446Z",
+    "status": "FAILED",
+    "stage": "TABAPAY",
+    "documentType": "CreatePayment",
+    "documentSubType": "TabaPay",
+    "tranCode": "21",
+    "achOptions": "R",
+    "type": "push",
+    "clientId": "Bm0RU8eASGfSxLYJjsG73Q",
+    "merchantId": "1070",
+    "statusHistory": [
+        {
+            "stage": "RTP_API",
+            "status": "RECEIVED",
+            "statusDate": "2026-06-03T20:06:11.7124621Z"
+        },
+        {
+            "stage": "ACCOUNTLOOKUP",
+            "status": "COMPLETED",
+            "statusDate": "2026-06-03T20:06:11.7942510Z",
+            "addInfo": "PartnerLedgerLookup completed"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "INITIATED",
+            "statusDate": "2026-06-03T20:06:11.9318900Z",
+            "addInfo": {
+                "message": "Ledger reservation completed",
+                "reservationId": "670c4fbf-6b9f-4081-b7b1-df4f9f5c73b1"
+            }
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:29.2882804Z",
+            "addInfo": "<html>\r\n<head><title>503 Service Temporarily Unavailable</title></head>\r\n<body>\r\n<center><h1>503 Service Temporarily Unavailable</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:35.7036083Z",
+            "addInfo": "<html>\r\n<head><title>503 Service Temporarily Unavailable</title></head>\r\n<body>\r\n<center><h1>503 Service Temporarily Unavailable</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:35.7645922Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:35.8265883Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:35.9012043Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:35.9592230Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:36.0413502Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 31 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:36.1047077Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:36.1772352Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
+        },
+        {
+            "stage": "TABAPAY",
+            "status": "FAILED",
+            "statusDate": "2026-06-03T20:06:36.2326446Z",
+            "addInfo": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 30 seconds.\" }"
+        }
+    ],
+    "valueDate": "2026-06-03T20:06:11.7124621Z",
+    "userIsBusiness": false,
+    "paymentReference": "e4ce3fe9-550a-427a-a380-fc309d9d1ac3",
     "sourceAccount": {
         "accountNumber": "9010010000000001",
         "name": {
-            "company": null,
             "first": "Earnin",
             "last": "Merchant"
         },
-        "address": null,
         "routingNumber": "084009593",
-        "accountType": "S",
-        "debtorBankMemberID": null,
-        "debtorIdOther": null
+        "accountType": "S"
     },
-    "destinationAccountId": null,
     "destinationAccount": {
         "accountNumber": "900397187386253",
         "name": {
-            "company": null,
             "first": "Sarah",
             "last": "Robinson"
         },
@@ -29,20 +119,24 @@
                 "123 First Street"
             ],
             "city": "Omaha",
-            "county": null,
             "countryISOCode": "840",
             "postalCode": "",
             "stateCode": "NE"
         },
-        "phoneNumber": "4022221144",
-        "creditorAgentTCHMemberID": null,
-        "creditorIdOther": null
+        "phoneNumber": "4022221144"
     },
     "amount": "0.10",
     "ultimateDebtor": {
         "name": "ultimate"
     },
-    "sourceCurrency": null,
-    "paymentCurrency": null,
-    "softDescriptor":null
+    "paymentCurrency": "840",
+    "_rid": "IK55AMQyu9USAAAAAAAAAA==",
+    "_self": "dbs/IK55AA==/colls/IK55AMQyu9U=/docs/IK55AMQyu9USAAAAAAAAAA==/",
+    "_etag": "\"4f01045b-0000-0300-0000-6a20894c0000\"",
+    "_attachments": "attachments/",
+    "fboAccount": "9900013724",
+    "fboAccountName": "Evolve Bank & Trust",
+    "fintechId": "EAA0617",
+    "taxId": "222222222",
+    "_ts": 1780517196
 }
