@@ -2,6 +2,16 @@
 # PaymentServices.Infrastructure — Azure DevOps Deployment Pipeline
 # Deploys Bicep templates to DEV → QA → PROD
 # Manual approval gates between DEV→QA and QA→PROD
+#
+# Uses `az deployment group create` against an ALREADY-EXISTING resource group
+# (this pipeline does NOT create resource groups). This is a resource-group-
+# scoped operation, so the service principal only needs Contributor on
+# rg-pmtsvc-{env} — it never touches the subscription scope. (The previous
+# AzureResourceManagerTemplateDeployment@3 task with action 'Create Or Update
+# Resource Group' performed a subscription-scoped RG check that failed with a
+# 400 on connections scoped to the resource group.)
+#
+# Resource groups must be created out-of-band before running this pipeline.
 # =============================================================================
 name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -49,24 +59,30 @@ stages:
               steps:
                 - checkout: self
 
-                - task: AzureResourceManagerTemplateDeployment@3
+                - task: AzureCLI@2
                   displayName: 'Deploy Bicep to DEV'
                   inputs:
-                    deploymentScope: 'Resource Group'
-                    azureResourceManagerConnection: 'AzureServiceConnection-DEV'
-                    subscriptionId: '$(DEV_SUBSCRIPTION_ID)'
-                    action: 'Create Or Update Resource Group'
-                    resourceGroupName: 'rg-pmtsvc-dev'
-                    location: 'centralus'
-                    templateLocation: 'Linked artifact'
-                    csmFile: '$(Build.SourcesDirectory)/dev/main.bicep'
-                    overrideParameters: >
-                      -appConfigEndpoint "$(DEV_APP_CONFIG_ENDPOINT)"
-                      -appInsightsConnectionString "$(DEV_APP_INSIGHTS_CONNECTION_STRING)"
-                      -managedIdentityId "$(DEV_MANAGED_IDENTITY_ID)"
-                      -managedIdentityClientId "$(DEV_MANAGED_IDENTITY_CLIENT_ID)"
-                    deploymentMode: 'Incremental'
-                    deploymentName: 'pmtsvc-infra-dev-$(Build.BuildId)'
+                    azureSubscription: 'Dev-Evolve-SvcCon'
+                    scriptType: pscore
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      $rg = "rg-pmtsvc-dev"
+                      if ((az group exists --name $rg) -ne "true") {
+                        Write-Error "Resource group '$rg' does not exist. Create it first; this pipeline does not create resource groups."
+                        exit 1
+                      }
+                      az deployment group create `
+                        --name "pmtsvc-infra-dev-$(Build.BuildId)" `
+                        --resource-group $rg `
+                        --template-file "$(Build.SourcesDirectory)/dev/main.bicep" `
+                        --mode Incremental `
+                        --parameters `
+                          appConfigEndpoint="$(DEV_APP_CONFIG_ENDPOINT)" `
+                          appInsightsConnectionString="$(DEV_APP_INSIGHTS_CONNECTION_STRING)" `
+                          managedIdentityId="$(DEV_MANAGED_IDENTITY_ID)" `
+                          managedIdentityClientId="$(DEV_MANAGED_IDENTITY_CLIENT_ID)" `
+                        --output table
+                      if ($LASTEXITCODE -ne 0) { Write-Error "Deployment failed."; exit $LASTEXITCODE }
 
   # ---------------------------------------------------------------------------
   # Stage 2: QA — requires manual approval after DEV
@@ -80,31 +96,37 @@ stages:
         displayName: 'Deploy Infrastructure to QA'
         pool:
           name: Azure Pipelines
-        environment: 'pmtsvc-qa'    # ← approval gate configured on this environment in ADO
+        environment: 'pmtsvc-qa'    # approval gate configured on this environment in ADO
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
 
-                - task: AzureResourceManagerTemplateDeployment@3
+                - task: AzureCLI@2
                   displayName: 'Deploy Bicep to QA'
                   inputs:
-                    deploymentScope: 'Resource Group'
-                    azureResourceManagerConnection: 'AzureServiceConnection-QA'
-                    subscriptionId: '$(QA_SUBSCRIPTION_ID)'
-                    action: 'Create Or Update Resource Group'
-                    resourceGroupName: 'rg-pmtsvc-qa'
-                    location: 'centralus'
-                    templateLocation: 'Linked artifact'
-                    csmFile: '$(Build.SourcesDirectory)/qa/main.bicep'
-                    overrideParameters: >
-                      -appConfigEndpoint "$(QA_APP_CONFIG_ENDPOINT)"
-                      -appInsightsConnectionString "$(QA_APP_INSIGHTS_CONNECTION_STRING)"
-                      -managedIdentityId "$(QA_MANAGED_IDENTITY_ID)"
-                      -managedIdentityClientId "$(QA_MANAGED_IDENTITY_CLIENT_ID)"
-                    deploymentMode: 'Incremental'
-                    deploymentName: 'pmtsvc-infra-qa-$(Build.BuildId)'
+                    azureSubscription: 'QA-Evolve-SvcCon'
+                    scriptType: pscore
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      $rg = "rg-pmtsvc-qa"
+                      if ((az group exists --name $rg) -ne "true") {
+                        Write-Error "Resource group '$rg' does not exist. Create it first; this pipeline does not create resource groups."
+                        exit 1
+                      }
+                      az deployment group create `
+                        --name "pmtsvc-infra-qa-$(Build.BuildId)" `
+                        --resource-group $rg `
+                        --template-file "$(Build.SourcesDirectory)/qa/main.bicep" `
+                        --mode Incremental `
+                        --parameters `
+                          appConfigEndpoint="$(QA_APP_CONFIG_ENDPOINT)" `
+                          appInsightsConnectionString="$(QA_APP_INSIGHTS_CONNECTION_STRING)" `
+                          managedIdentityId="$(QA_MANAGED_IDENTITY_ID)" `
+                          managedIdentityClientId="$(QA_MANAGED_IDENTITY_CLIENT_ID)" `
+                        --output table
+                      if ($LASTEXITCODE -ne 0) { Write-Error "Deployment failed."; exit $LASTEXITCODE }
 
   # ---------------------------------------------------------------------------
   # Stage 3: PROD — requires manual approval after QA
@@ -118,28 +140,34 @@ stages:
         displayName: 'Deploy Infrastructure to PROD'
         pool:
           name: Azure Pipelines
-        environment: 'pmtsvc-prod'  # ← approval gate configured on this environment in ADO
+        environment: 'pmtsvc-prod'  # approval gate configured on this environment in ADO
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
 
-                - task: AzureResourceManagerTemplateDeployment@3
+                - task: AzureCLI@2
                   displayName: 'Deploy Bicep to PROD'
                   inputs:
-                    deploymentScope: 'Resource Group'
-                    azureResourceManagerConnection: 'AzureServiceConnection-PROD'
-                    subscriptionId: '$(PROD_SUBSCRIPTION_ID)'
-                    action: 'Create Or Update Resource Group'
-                    resourceGroupName: 'rg-pmtsvc-prod'
-                    location: 'centralus'
-                    templateLocation: 'Linked artifact'
-                    csmFile: '$(Build.SourcesDirectory)/prod/main.bicep'
-                    overrideParameters: >
-                      -appConfigEndpoint "$(PROD_APP_CONFIG_ENDPOINT)"
-                      -appInsightsConnectionString "$(PROD_APP_INSIGHTS_CONNECTION_STRING)"
-                      -managedIdentityId "$(PROD_MANAGED_IDENTITY_ID)"
-                      -managedIdentityClientId "$(PROD_MANAGED_IDENTITY_CLIENT_ID)"
-                    deploymentMode: 'Incremental'
-                    deploymentName: 'pmtsvc-infra-prod-$(Build.BuildId)'
+                    azureSubscription: 'rg-pmtsvc-prod-SvcCon-WI'
+                    scriptType: pscore
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      $rg = "rg-pmtsvc-prod"
+                      if ((az group exists --name $rg) -ne "true") {
+                        Write-Error "Resource group '$rg' does not exist. Create it first; this pipeline does not create resource groups."
+                        exit 1
+                      }
+                      az deployment group create `
+                        --name "pmtsvc-infra-prod-$(Build.BuildId)" `
+                        --resource-group $rg `
+                        --template-file "$(Build.SourcesDirectory)/prod/main.bicep" `
+                        --mode Incremental `
+                        --parameters `
+                          appConfigEndpoint="$(PROD_APP_CONFIG_ENDPOINT)" `
+                          appInsightsConnectionString="$(PROD_APP_INSIGHTS_CONNECTION_STRING)" `
+                          managedIdentityId="$(PROD_MANAGED_IDENTITY_ID)" `
+                          managedIdentityClientId="$(PROD_MANAGED_IDENTITY_CLIENT_ID)" `
+                        --output table
+                      if ($LASTEXITCODE -ne 0) { Write-Error "Deployment failed."; exit $LASTEXITCODE }
