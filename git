@@ -1,8 +1,48 @@
-	Exception while executing function: Functions.CreatePayment Exception binding parameter 'req' The client has disconnected Incorrect function. (0x80070001)
-
-
-:52:19.647 PM	Request	Name: CreatePayment, Successful request: true, Response time: 4.9 ms, URL: https://fa-pmtsvc-rtpsend-qa-centralus.azurewebsites.net/api/CreatePayment
-3:52:19.648 PM	Trace	Severity level: Information, Message: Executing 'Functions.CreatePayment' (Reason='This function was programmatically called via the host APIs.', Id=e4a8c2f9-5e15-4ce3-8411-831414570de3)
-3:52:19.649 PM	Internal	Name: Invoke, Type: InProc, Call status: true, Duration: 694.1 μs
-3:52:19.650 PM	Trace	Severity level: Information, Message: Request body: {"paymentReference":"372e01ed-c9ca-47fd-8973-5b3a9d405259","sourceAccountId":null,"sourceAccount":{"accountNumber":"9010010000000001","name":{"company":null,"first":"Earnin","last":"Merchant"},"address":null,"routingNumber":"084009593","accountType":"S","debtorBankMemberID":null,"debtorIdOther":null},"destinationAccountId":null,"destinationAccount":{"accountNumber":"900397187386253","name":{"company":null,"first":"Sarah","last":"Robinson"},"routingNumber":"101115315","accountType":"C","address":{"addressLines":["123 First Street"],"city":"Omaha","county":null,"countryISOCode":"840","postalCode":"","stateCode":"NE"},"phoneNumber":"4022221144","creditorAgentTCHMemberID":null,"creditorIdOther":null},"amount":"0.10","ultimateDebtor":{"name":"ultimate"},"sourceCurrency":null,"paymentCurrency":null,"softDescriptor":null,"remittanceInformation":null}
-3:52:19.650 PM	Trace	Severity level: Information, Message: Executing ObjectResult, writing value of type 'PaymentServices.RTPSend.Exceptions.ValidationProblem'.
+{
+    "paymentReference": "b9624de-1c6i-5766-97ae-a9d7b90a9zd9",
+    "sourceAccountId": null,
+    "sourceAccount": {
+        "accountNumber": "9010010000000001",
+        "name": {
+            "company": null,
+            "first": "Earnin",
+            "last": "Merchant"
+        },
+        "address": null,
+        "routingNumber": "084009593",
+        "accountType": "S",
+        "debtorBankMemberID": null,
+        "debtorIdOther": null
+    },
+    "destinationAccountId": null,
+    "destinationAccount": {
+        "accountNumber": "900397187386253",
+        "name": {
+            "company": null,
+            "first": "Sarah",
+            "last": "Robinson"
+        },
+        "routingNumber": "101115315",
+        "accountType": "C",
+        "address": {
+            "addressLines": [
+                "123 First Street"
+            ],
+            "city": "Omaha",
+            "county": null,
+            "countryISOCode": "840",
+            "postalCode": "",
+            "stateCode": "NE"
+        },
+        "phoneNumber": "4022221144",
+        "creditorAgentTCHMemberID": null,
+        "creditorIdOther": null
+    },
+    "amount": "0.90",
+    "ultimateDebtor": {
+        "name": "ultimate"
+    },
+    "sourceCurrency": null,
+    "paymentCurrency": null,
+    "softDescriptor":null
+}
