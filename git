@@ -1,54 +1,74 @@
- {
-    "_id": {
-      "$oid": "66bfaf2b56d5eb0013187254"
+{
+    "id": "a0c1b2d3-e4f5-6789-abcd-ef0123456789",
+    "AccountNumber": "9900013724",
+    "Currency": {
+        "Name": "US Dollar",
+        "Symbol": "USD",
+        "BaseUnit": "Cent",
+        "Decimals": 2
     },
-    "kind": "Remote",
-    "owners": [
-      {
-        "$oid": "66bfaf2b56d5eb0013187231"
-      }
-    ],
-    "signers": [
-      {
-        "$oid": "66bfaf2b56d5eb0013187231"
-      }
-    ],
-    "accountNumber": "9010010000000001",
-    "type": "Checking",
-    "ledger": {
-      "$oid": "66bfaf2b56d5eb001318724b"
-    },
-    "FIAbaNumber": "084009593",
-    "FIName": "Evolve Bank and Trust",
-    "FIAddress": {
-      "$oid": "66bfaf2b56d5eb0013187249"
-    },
-    "nickname": "remote account",
-    "features": [],
-    "createdAt": {
-      "$date": "2024-08-16T19:57:31.547Z"
-    },
-    "updatedAt": {
-      "$date": "2024-08-16T19:57:31.547Z"
-    },
-    "__v": 0
-  }
-
+    "LastBalance": 989.2,
+    "Metadata": {},
+    "CreatedAt": "2026-06-01T04:34:44.7419673Z",
+    "UpdatedAt": "2026-06-02T04:12:31.7205818Z",
+    "LedgerType": "prefund-ledger-v2",
+    "_rid": "uTljALtChTAIAAAAAAAAAA==",
+    "_self": "dbs/uTljAA==/colls/uTljALtChTA=/docs/uTljALtChTAIAAAAAAAAAA==/",
+    "_etag": "\"2b034a2c-0000-0300-0000-6a1e582f0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1780373551
+}
 
 {
-    "id": "src-remote-0001",
-    "accountNumber": "9010010000000001",
-    "fiAbaNumber": "084009593",
-    "fiName": "Evolve Bank and Trust",
-    "ownerIds": [
-        "src-customer-0001"
-    ],
-    "nickname": "source remote",
-    "createdAt": "2026-05-01T00:00:00Z",
-    "updatedAt": "2026-05-01T00:00:00Z",
-    "_rid": "k8UbALqXHFwGAAAAAAAAAA==",
-    "_self": "dbs/k8UbAA==/colls/k8UbALqXHFw=/docs/k8UbALqXHFwGAAAAAAAAAA==/",
-    "_etag": "\"6f0274a8-0000-0300-0000-6a1df7ad0000\"",
+    "id": "29b43bf1-5c71-4be6-a88b-e8b77250f8b1",
+    "LedgerId": "a0c1b2d3-e4f5-6789-abcd-ef0123456789",
+    "AccountNumber": "9900013724",
+    "Amount": -0.9,
+    "Code": null,
+    "GluId": "000198f8-9bca-4bc4-9cd9-b5b4c825e438",
+    "Trace": {
+        "evolveId": "63a587a5-28c0-436f-bd14-baefe429b018"
+    },
+    "TransactionId": null,
+    "BatchId": null,
+    "Status": null,
+    "Metadata": {
+        "gluId": "000198f8-9bca-4bc4-9cd9-b5b4c825e438",
+        "Account": "9900013724",
+        "evolveId": "63a587a5-28c0-436f-bd14-baefe429b018",
+        "correlationId": "31a0e75a-c85e-4e7a-a45d-f327967f346b",
+        "fintechId": "EAA0617",
+        "endpoint": "tptch.send",
+        "postedAt": "2026-06-02T04:12:31.7931669Z"
+    },
+    "CreatedAt": "2026-06-02T04:12:31.7613417Z",
+    "UpdatedAt": "2026-06-02T04:12:31.7613418Z",
+    "Kind": "rtp.send",
+    "_rid": "uTljAJY3Gg8pAAAAAAAAAA==",
+    "_self": "dbs/uTljAA==/colls/uTljAJY3Gg8=/docs/uTljAJY3Gg8pAAAAAAAAAA==/",
+    "_etag": "\"4001b144-0000-0300-0000-6a1e582f0000\"",
     "_attachments": "attachments/",
-    "_ts": 1780348845
+    "_ts": 1780373551
+}
+
+{
+    "id": "b1c2d3e4-f5a6-7890-bcde-f01234567890",
+    "LedgerId": "a0c1b2d3-e4f5-6789-abcd-ef0123456789",
+    "AccountNumber": "9900013724",
+    "Amount": 1000,
+    "GluId": "c2d3e4f5-a6b7-8901-cdef-012345678901",
+    "TransactionId": "seed-rtpsend-dev",
+    "Kind": "seed",
+    "Status": "Completed",
+    "Metadata": {
+        "postedAt": "2026-05-01T00:00:00Z",
+        "correlationId": "seed-rtpsend-dev",
+        "note": "manual seed for RTPSend dev testing"
+    },
+    "CreatedAt": "2026-05-01T00:00:00Z",
+    "_rid": "uTljAJY3Gg8dAAAAAAAAAA==",
+    "_self": "dbs/uTljAA==/colls/uTljAJY3Gg8=/docs/uTljAJY3Gg8dAAAAAAAAAA==/",
+    "_etag": "\"1301050e-0000-0300-0000-6a1d06b80000\"",
+    "_attachments": "attachments/",
+    "_ts": 1780287160
 }
