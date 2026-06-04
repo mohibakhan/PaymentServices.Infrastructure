@@ -1,248 +1,54 @@
-using Azure.Identity;
-using FluentValidation;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using PaymentServices.RTPSend.Helpers;
-using PaymentServices.RTPSend.Interface;
-using PaymentServices.RTPSend.Interface.Adapters;
-using PaymentServices.RTPSend.Interface.Services;
-using PaymentServices.RTPSend.Providers;
-using PaymentServices.RTPSend.Repositories;
-using PaymentServices.RTPSend.Repositories.Adapters;
-using PaymentServices.RTPSend.Services;
-using PaymentServices.RTPSend.Settings;
-using PaymentServices.RTPSend.Validators;
-using PaymentServices.Shared.Extensions;
-using Polly;
-using Polly.Retry;
-using Serilog;
-using Serilog.Events;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
+ {
+    "_id": {
+      "$oid": "66bfaf2b56d5eb0013187254"
+    },
+    "kind": "Remote",
+    "owners": [
+      {
+        "$oid": "66bfaf2b56d5eb0013187231"
+      }
+    ],
+    "signers": [
+      {
+        "$oid": "66bfaf2b56d5eb0013187231"
+      }
+    ],
+    "accountNumber": "9010010000000001",
+    "type": "Checking",
+    "ledger": {
+      "$oid": "66bfaf2b56d5eb001318724b"
+    },
+    "FIAbaNumber": "084009593",
+    "FIName": "Evolve Bank and Trust",
+    "FIAddress": {
+      "$oid": "66bfaf2b56d5eb0013187249"
+    },
+    "nickname": "remote account",
+    "features": [],
+    "createdAt": {
+      "$date": "2024-08-16T19:57:31.547Z"
+    },
+    "updatedAt": {
+      "$date": "2024-08-16T19:57:31.547Z"
+    },
+    "__v": 0
+  }
 
-namespace PaymentServices.RTPSend;
 
-[ExcludeFromCodeCoverage]
-public static class Program
 {
-    private const string Prefix = "rtpSend:AppSettings";
-
-    public static async Task Main(string[] args)
-    {
-        var host = new HostBuilder()
-            .ConfigureAppConfiguration(SetupAppConfiguration)
-            .ConfigureFunctionsWebApplication()
-            .ConfigureServices((context, services) =>
-            {
-                var config = context.Configuration;
-
-                SetupSerilog(config);
-
-                // Application Insights
-                services.AddApplicationInsightsTelemetryWorkerService();
-                services.ConfigureFunctionsApplicationInsights();
-
-                // Shared platform infrastructure (PaymentServices.Shared)
-                services.AddPaymentAppSettings(config, Prefix);
-                services.AddPaymentCosmosClient(config, Prefix);
-                services.AddPaymentServiceBusPublisher(config, Prefix);
-
-                // RTPSend-specific settings
-                services.AddOptions<RtpSendSettings>()
-                    .Configure<IConfiguration>((settings, cfg) =>
-                        cfg.GetSection(Prefix).Bind(settings));
-
-                // Cosmos containers
-                RegisterCosmosContainers(services, config);
-
-                // Adapters / repositories
-                services.AddScoped<IPaymentCosmosDBAdapter, PaymentCosmosDBAdapter>();
-                services.AddScoped<IPartnerLedgerCosmosDBAdapter, PartnerLedgerCosmosDBAdapter>();
-                services.AddScoped<IApiUserConfigCosmosAdapter, ApiUserConfigAdapter>();
-                services.AddScoped<IPaymentIdempotencyAdapter, PaymentIdempotencyAdapter>();
-                services.AddSingleton<IServiceBusAdapter, ServiceBusAdapter>();
-
-                // Helpers
-                services.AddScoped<IEvolvePaymentRequestHelper, EvolvePaymentRequestHelper>();
-                services.AddScoped<IProblemHelper, ProblemHelper>();
-
-                // HTTP + HttpContext
-                services.AddHttpClient();
-                services.AddHttpContextAccessor();
-
-                // TabaPay client — named to match TabaPaySendService's
-                // CreateClient(nameof(TabaPaySendService)). Resilience handler
-                // retries transient 429/503 with capped, Retry-After-aware backoff
-                // so a rate-limited sandbox doesn't immediately fail the payment.
-                // If TabaPay asks for longer than the cap (e.g. "retry in 31s"),
-                // we give up fast and let Service Bus redeliver later rather than
-                // hold the message lock.
-                services.AddHttpClient("TabaPaySendService")
-                    .AddResilienceHandler("tabapay-retry", builder =>
-                    {
-                        builder.AddRetry(new HttpRetryStrategyOptions
-                        {
-                            ShouldHandle = args => ValueTask.FromResult(
-                                args.Outcome.Result is { StatusCode: HttpStatusCode.TooManyRequests }
-                                                     or { StatusCode: HttpStatusCode.ServiceUnavailable }
-                                || HttpClientResiliencePredicates.IsTransient(args.Outcome)),
-                            MaxRetryAttempts = 3,
-                            BackoffType = DelayBackoffType.Exponential,
-                            UseJitter = true,
-                            Delay = TimeSpan.FromSeconds(1),
-                            DelayGenerator = args =>
-                            {
-                                var capped = TimeSpan.FromSeconds(6);
-
-                                // Respect Retry-After when present, clamped to the cap.
-                                var retryAfter = args.Outcome.Result?.Headers?.RetryAfter;
-                                if (retryAfter is not null)
-                                {
-                                    TimeSpan? hinted =
-                                        retryAfter.Delta
-                                        ?? (retryAfter.Date is { } d ? d - DateTimeOffset.UtcNow : null);
-
-                                    if (hinted is { } h && h > TimeSpan.Zero)
-                                    {
-                                        // Longer than our cap → don't wait; exhaust
-                                        // fast and let SB redeliver later.
-                                        if (h > capped)
-                                            return ValueTask.FromResult<TimeSpan?>(TimeSpan.Zero);
-                                        return ValueTask.FromResult<TimeSpan?>(h);
-                                    }
-                                }
-
-                                var backoff = args.AttemptNumber switch
-                                {
-                                    0 => TimeSpan.FromSeconds(1),
-                                    1 => TimeSpan.FromSeconds(2),
-                                    _ => TimeSpan.FromSeconds(4),
-                                };
-                                return ValueTask.FromResult<TimeSpan?>(backoff < capped ? backoff : capped);
-                            }
-                        });
-
-                        // Hard ceiling on the whole retry pipeline for one call.
-                        builder.AddTimeout(TimeSpan.FromSeconds(20));
-                    });
-
-                // Gateway client — HTTP call to /tptch/send
-                services.AddHttpClient<IGatewayClient, GatewayClient>();
-
-                // Core business services
-                services.AddScoped<IPartnerLedgerSystem, PartnerLedgerSystem>();
-                services.AddScoped<ITabaPaySendService, TabaPaySendService>();
-                services.AddScoped<IServiceBusMessageService, ServiceBusMessageService>();
-                services.AddScoped<IPaymentOrchestrator, PaymentOrchestrator>();
-
-                // Validation
-                services.AddValidatorsFromAssemblyContaining<BasicPaymentRequestValidator>();
-
-                // Health checks
-                services.AddHealthChecks();
-                services.AddSingleton<IHealthCheckServiceProvider, HealthCheckServiceProvider>();
-            })
-            .ConfigureLogging((context, logging) =>
-            {
-                logging.Services.Configure<LoggerFilterOptions>(options =>
-                {
-                    var defaultRule = options.Rules.FirstOrDefault(rule =>
-                        rule.ProviderName ==
-                        "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
-
-                    if (defaultRule is not null)
-                        options.Rules.Remove(defaultRule);
-                });
-
-                logging.AddSerilog(dispose: true);
-            })
-            .Build();
-
-        await host.RunAsync();
-    }
-
-    private static void SetupAppConfiguration(IConfigurationBuilder builder)
-    {
-        builder.AddEnvironmentVariables();
-        var settings = builder.Build();
-
-        var appConfigUrl = settings["AppConfig:Endpoint"];
-        var azureClientId = settings["AZURE_CLIENT_ID"];
-
-        if (!string.IsNullOrWhiteSpace(appConfigUrl) && !string.IsNullOrWhiteSpace(azureClientId))
-        {
-            var credentialOptions = new DefaultAzureCredentialOptions
-            {
-                ManagedIdentityClientId = azureClientId
-            };
-            var credential = new DefaultAzureCredential(credentialOptions);
-
-            builder.AddAzureAppConfiguration(options =>
-            {
-                options
-                    .Connect(new Uri(appConfigUrl), credential)
-                    .Select("rtpSend:*")
-                    .Select("telemetry:*")
-                    .ConfigureKeyVault(kv => kv.SetCredential(credential));
-            });
-        }
-
-        builder
-            .SetBasePath(Environment.CurrentDirectory)
-            .AddJsonFile("local.settings.json", optional: true, reloadOnChange: false);
-    }
-
-    private static void SetupSerilog(IConfiguration config)
-    {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.Azure.Functions.Worker", LogEventLevel.Warning)
-            .MinimumLevel.Override("Host", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .Enrich.WithProperty("Service", "PaymentServices.RTPSend")
-            .Enrich.WithProperty("Environment",
-                Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") ?? "Production")
-            .CreateLogger();
-    }
-
-    private static void RegisterCosmosContainers(IServiceCollection services, IConfiguration config)
-    {
-        var database = config[$"{Prefix}:COSMOS_DATABASE"]
-            ?? throw new InvalidOperationException($"{Prefix}:COSMOS_DATABASE is required");
-
-        services.AddKeyedSingleton<Container>("payments", (sp, _) =>
-        {
-            var client = sp.GetRequiredService<CosmosClient>();
-            var container = config[$"{Prefix}:COSMOS_PAYMENT_CONTAINER"] ?? "paymentRequests";
-            return client.GetContainer(database, container);
-        });
-
-        services.AddKeyedSingleton<Container>("partnerLedger", (sp, _) =>
-        {
-            var client = sp.GetRequiredService<CosmosClient>();
-            var container = config[$"{Prefix}:COSMOS_PARTNER_LEDGER_CONTAINER"] ?? "partnerLedger";
-            return client.GetContainer(database, container);
-        });
-
-        services.AddKeyedSingleton<Container>("apiUserConfig", (sp, _) =>
-        {
-            var client = sp.GetRequiredService<CosmosClient>();
-            var container = config[$"{Prefix}:COSMOS_API_CONFIG_CONTAINER"] ?? "apiUserConfig";
-            return client.GetContainer(database, container);
-        });
-
-        services.AddKeyedSingleton<Container>("paymentIdempotency", (sp, _) =>
-        {
-            var client = sp.GetRequiredService<CosmosClient>();
-            var container = config[$"{Prefix}:COSMOS_IDEMPOTENCY_CONTAINER"] ?? "paymentIdempotency";
-            return client.GetContainer(database, container);
-        });
-    }
+    "id": "src-remote-0001",
+    "accountNumber": "9010010000000001",
+    "fiAbaNumber": "084009593",
+    "fiName": "Evolve Bank and Trust",
+    "ownerIds": [
+        "src-customer-0001"
+    ],
+    "nickname": "source remote",
+    "createdAt": "2026-05-01T00:00:00Z",
+    "updatedAt": "2026-05-01T00:00:00Z",
+    "_rid": "k8UbALqXHFwGAAAAAAAAAA==",
+    "_self": "dbs/k8UbAA==/colls/k8UbALqXHFw=/docs/k8UbALqXHFwGAAAAAAAAAA==/",
+    "_etag": "\"6f0274a8-0000-0300-0000-6a1df7ad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1780348845
 }
